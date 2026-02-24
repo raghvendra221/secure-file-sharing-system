@@ -14,7 +14,7 @@ class SecureFile(models.Model):
 
     file = models.FileField(upload_to='uploads/')
     original_name = models.CharField(max_length=255)
-
+    encrypted_file_key = models.BinaryField(null=True, blank=True)
     upload_time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

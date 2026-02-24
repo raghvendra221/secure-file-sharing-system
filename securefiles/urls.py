@@ -4,11 +4,13 @@ from django.urls import path,include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
+from accounts.forms import EmailAuthenticationForm
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('files.urls')),
-    path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
+    path('login/', auth_views.LoginView.as_view(template_name='files/login.html',
+     authentication_form=EmailAuthenticationForm), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
 
 ]
