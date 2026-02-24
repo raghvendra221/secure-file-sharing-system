@@ -1,0 +1,12 @@
+{% extends "files/base.html" %}
+{% block content %}
+
+<div class="alert alert-success">
+    Share this secure link:
+</div>
+
+<p>
+    <a href="{{ share_link }}">{{ share_link }}</a>
+</p>
+
+{% endblock %}

@@ -1,3 +1,4 @@
+from datetime import timezone
 from django.db import models
 from django.conf import settings
 import uuid
@@ -19,3 +20,19 @@ class SecureFile(models.Model):
 
     def __str__(self):
         return self.original_name
+
+
+class FileShareToken(models.Model):
+    file = models.ForeignKey(SecureFile, on_delete=models.CASCADE)
+    token = models.CharField(max_length=255, unique=True)
+    expiry_time = models.DateTimeField()
+    max_downloads = models.IntegerField(default=1)
+    current_downloads = models.IntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def is_expired(self):
+        return timezone.now() > self.expiry_time
+
+    def __str__(self):
+        return f"Token for {self.file.original_name}"

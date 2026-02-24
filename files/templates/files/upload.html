@@ -1,52 +1,60 @@
-{% extends "files/base.html" %}
-
+{% extends 'files/base.html' %}
 {% block content %}
+  <div class="dashboard-container">
+    <div class="row">
+      <!-- Upload Section -->
+      {% if request.user.role == 'admin' or request.user.role == 'uploader' %}
+        <div class="col-md-4 mb-4">
+          <div class="card card-custom p-4 shadow-sm">
+            <h5 class="mb-3">📤 Upload Secure File</h5>
 
-<h3 class="mb-4">Upload Secure File</h3>
+            <form method="POST" enctype="multipart/form-data">
+              {% csrf_token %}
 
-{% if request.user.role == "admin" or request.user.role == "uploader" %}
+              <div class="mb-3">{{ form.file.label_tag }}
+                {{ form.file }}</div>
 
-<div class="card p-4 shadow-sm mb-4">
-    <form method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button class="btn btn-primary">Upload</button>
-    </form>
-</div>
+              <button class="btn btn-primary w-100">Upload</button>
+            </form>
+          </div>
+        </div>
+      {% endif %}
 
-{% else %}
-<div class="alert alert-warning">
-    You do not have permission to upload files.
-</div>
-{% endif %}
+      <!-- File List -->
+      <div class="col-md-8">
+        <h5 class="mb-3 text-black">📂 Your Files</h5>
 
-<h4>Your Files</h4>
+        {% if files %}
+          <div class="row">
+            {% for file in files %}
+              <div class="col-md-6 mb-4">
+                <div class="file-card shadow-sm">
+                  <div class="file-title text-truncate">{{ file.original_name }}</div>
 
-<table class="table table-bordered table-striped mt-3">
-    <thead class="table-dark">
-        <tr>
-            <th>File Name</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for file in files %}
-        <tr>
-            <td>{{ file.original_name }}</td>
-            <td>
-                <a href="{% url 'download' file.id %}" class="btn btn-success btn-sm">Download</a>
+                  {% comment %} <div class="d-flex justify-content-between mt-3">
+                    <a href="{% url 'download' file.id %}" class="btn btn-success btn-sm">Download</a>
 
-                {% if request.user.role == "admin" or file.owner == request.user %}
-                    <a href="{% url 'delete' file.id %}" class="btn btn-danger btn-sm">Delete</a>
-                {% endif %}
-            </td>
-        </tr>
-    {% empty %}
-        <tr>
-            <td colspan="2">No files uploaded.</td>
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
+                    {% if request.user.role == 'admin' or file.owner == request.user %}
+                      <a href="{% url 'delete' file.id %}" class="btn btn-outline-danger btn-sm">Delete</a>
+                    {% endif %}
+                  </div> {% endcomment %}
+                  <div class="d-flex justify-content-between mt-3">
+                    <a href="{% url 'download' file.id %}" class="btn btn-success btn-sm">Download</a>
 
+                    {% if request.user.role == 'admin' or file.owner == request.user %}
+                      <a href="{% url 'generate_token' file.id %}" class="btn btn-info btn-sm">Generate Link</a>
+
+                      <a href="{% url 'delete' file.id %}" class="btn btn-outline-danger btn-sm">Delete</a>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="alert alert-light">No files uploaded yet.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
 {% endblock %}

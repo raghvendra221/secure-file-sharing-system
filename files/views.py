@@ -1,12 +1,15 @@
 from django.shortcuts import render,redirect
 from .utils import encrypt_with_key, decrypt_with_key, generate_file_key   
-from .permissions import can_download, can_upload, can_delete
-from .forms import FileUploadForm
+from .permissions import can_download, can_generate_token, can_upload, can_delete
+from .forms import FileUploadForm, ShareTokenForm
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseForbidden
 from django.conf import settings
 from django.shortcuts import get_object_or_404
-from .models import SecureFile
+from .models import FileShareToken, SecureFile
+from datetime import timedelta
+import secrets
+from django.utils import timezone
 
 
 @login_required
@@ -86,3 +89,76 @@ def delete_file(request, file_id):
 
     secure_file.delete()
     return redirect("home")
+
+
+@login_required
+def generate_share_token(request, file_id):
+    secure_file = get_object_or_404(SecureFile, id=file_id)
+
+    if not can_generate_token(request.user, secure_file):
+        return HttpResponseForbidden("Not allowed.")
+
+    if request.method == "POST":
+        form = ShareTokenForm(request.POST)
+        if form.is_valid():
+            expiry_minutes = form.cleaned_data['expiry_minutes']
+            max_downloads = form.cleaned_data['max_downloads']
+
+            token_string = secrets.token_urlsafe(32)
+
+            expiry_time = timezone.now() + timedelta(minutes=expiry_minutes)
+
+            FileShareToken.objects.create(
+                file=secure_file,
+                token=token_string,
+                expiry_time=expiry_time,
+                max_downloads=max_downloads
+            )
+
+            share_link = request.build_absolute_uri(
+                f"/share/{token_string}/"
+            )
+
+            return render(request, "files/share_success.html", {
+                "share_link": share_link
+            })
+
+    else:
+        form = ShareTokenForm()
+
+    return render(request, "files/generate_token.html", {
+        "form": form,
+        "file": secure_file
+    })
+
+@login_required
+def token_download(request, token):
+
+    if request.user.role != "viewer":
+        return HttpResponseForbidden("Only viewers can access shared files.")
+
+    share_token = get_object_or_404(FileShareToken, token=token)
+
+    if not share_token.is_active:
+        return HttpResponse("Token inactive.")
+
+    if share_token.is_expired():
+        share_token.is_active = False
+        share_token.save()
+        return HttpResponse("Token expired.")
+
+    if share_token.current_downloads >= share_token.max_downloads:
+        share_token.is_active = False
+        share_token.save()
+        return HttpResponse("Download limit reached.")
+
+    # Increase download counter
+    share_token.current_downloads += 1
+    share_token.save()
+
+    secure_file = share_token.file
+
+    # Reuse your existing decryption logic here
+    # (call your decrypt function and return file)
+
+    return download_file(request, secure_file.id)

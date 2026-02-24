@@ -1,0 +1,12 @@
+{% extends "files/base.html" %}
+{% block content %}
+
+<h4>Generate Secure Share Link</h4>
+
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn btn-primary">Generate Link</button>
+</form>
+
+{% endblock %}
