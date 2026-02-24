@@ -5,7 +5,15 @@ def can_upload(user):
 def can_download(user, file):
     if user.role == "admin":
         return True
-    return file.owner == user
+
+    if file.owner == user:
+        return True
+
+    # Allow viewer (token validation already done)
+    if user.role == "viewer":
+        return True
+
+    return False
 
 
 def can_delete(user, file):

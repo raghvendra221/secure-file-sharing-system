@@ -42,7 +42,7 @@
                     <a href="{% url 'download' file.id %}" class="btn btn-success btn-sm">Download</a>
 
                     {% if request.user.role == 'admin' or file.owner == request.user %}
-                      <a href="{% url 'generate_token' file.id %}" class="btn btn-info btn-sm">Generate Link</a>
+                      <a href="{% url 'generate_token' file.id %}" class="btn btn-outline-info btn-sm">🔗 Share</a>
 
                       <a href="{% url 'delete' file.id %}" class="btn btn-outline-danger btn-sm">Delete</a>
                     {% endif %}

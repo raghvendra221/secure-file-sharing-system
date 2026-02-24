@@ -13,6 +13,11 @@
     <link rel="stylesheet" href="{% static 'files/css/style.css' %}?v=1.4"/>
 </head>
 <body class="bg-light">
+    {% if request.GET.next and '/share/' in request.GET.next %}
+<div id="floatingAlert" class="floating-alert">
+    🔐 Login required to access secure shared file.
+</div>
+{% endif %}
 
 <nav class="navbar navbar-dark bg-dark px-3">
     <span class="navbar-brand">Secure File Sharing System</span>
@@ -25,10 +30,33 @@
     {% endif %}
 </nav>
 
+{% if messages %}
+<div id="toast-container">
+    {% for message in messages %}
+        <div class="custom-toast {{ message.tags }}">
+            {{ message }}
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
 <div class="container mt-5">
     {% block content %}
     {% endblock %}
 </div>
+
+<script>
+setTimeout(function() {
+    var alert = document.getElementById("floatingAlert");
+    if (alert) {
+        alert.style.transition = "opacity 0.5s ease";
+        alert.style.opacity = "0";
+        setTimeout(function() {
+            alert.remove();
+        }, 500);
+    }
+}, 7000); //  seconds
+</script>
 
 </body>
 </html>

@@ -1,4 +1,7 @@
+from urllib import request
+
 from django.shortcuts import render,redirect
+from django.urls import reverse
 from .utils import encrypt_with_key, decrypt_with_key, generate_file_key   
 from .permissions import can_download, can_generate_token, can_upload, can_delete
 from .forms import FileUploadForm, ShareTokenForm
@@ -10,6 +13,7 @@ from .models import FileShareToken, SecureFile
 from datetime import timedelta
 import secrets
 from django.utils import timezone
+from django.contrib import messages
 
 
 @login_required
@@ -131,34 +135,51 @@ def generate_share_token(request, file_id):
         "file": secure_file
     })
 
+
+
 @login_required
 def token_download(request, token):
 
-    if request.user.role != "viewer":
-        return HttpResponseForbidden("Only viewers can access shared files.")
-
     share_token = get_object_or_404(FileShareToken, token=token)
+    secure_file = share_token.file
 
-    if not share_token.is_active:
-        return HttpResponse("Token inactive.")
+    # Role check
+    if request.user.role not in ["viewer", "admin"] and request.user != secure_file.owner:
+        return HttpResponseForbidden("Not allowed.")
 
+    # Expiry check
     if share_token.is_expired():
         share_token.is_active = False
         share_token.save()
-        return HttpResponse("Token expired.")
 
+        if request.user == secure_file.owner or request.user.role == "admin":
+            messages.warning(request, "This share link has expired.")
+            return redirect("home")
+
+        return render(request, "files/token_error.html", {
+            "message": "Token expired."
+        })
+
+    # Download limit check
     if share_token.current_downloads >= share_token.max_downloads:
         share_token.is_active = False
         share_token.save()
-        return HttpResponse("Download limit reached.")
 
-    # Increase download counter
+        if request.user == secure_file.owner or request.user.role == "admin":
+            messages.warning(request, "Download limit reached for this shared link.")
+            return redirect("home")
+
+        return render(request, "files/token_error.html", {
+            "message": "Download limit reached."
+        })
+
+    # Increase counter
     share_token.current_downloads += 1
     share_token.save()
 
-    secure_file = share_token.file
+    download_url = reverse('download', args=[secure_file.id])
 
-    # Reuse your existing decryption logic here
-    # (call your decrypt function and return file)
+    return render(request, "files/token_success.html", {
+        "download_url": download_url
+    })      
 
-    return download_file(request, secure_file.id)

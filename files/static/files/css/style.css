@@ -90,3 +90,80 @@ body {
     box-shadow: 0 0 5px rgba(42,82,152,0.5);
     border-color: #2a5298;
 }
+
+.btn-outline-info {
+    border-color: #38bdf8;
+    color: #38bdf8;
+}
+
+.btn-outline-info:hover {
+    background: #38bdf8;
+    color: #0f172a;
+}
+
+/* ===== Floating Alert ===== */
+
+.floating-alert {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #1e293b;
+    color: #38bdf8;
+    padding: 12px 18px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(56,189,248,0.4);
+    font-size: 14px;
+    z-index: 9999;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Fade in */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Toast Notification ===== */
+
+#toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+.custom-toast {
+    background: #1e293b;
+    color: white;
+    padding: 12px 18px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.4);
+    min-width: 250px;
+    opacity: 0;
+    transform: translateY(-10px);
+    animation: fadeIn 0.4s forwards;
+}
+
+/* Info */
+.custom-toast.info {
+    border-left: 4px solid #38bdf8;
+}
+
+/* Warning */
+.custom-toast.warning {
+    border-left: 4px solid #facc15;
+}
+
+/* Success */
+.custom-toast.success {
+    border-left: 4px solid #22c55e;
+}
+
+/* Fade animation */
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

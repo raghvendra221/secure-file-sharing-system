@@ -1,12 +1,44 @@
 {% extends "files/base.html" %}
 {% block content %}
+{% if request.GET.next %}
+<div class="alert alert-warning text-center">
+    Please login to access the shared file.
+</div>
+{% endif %}
 
-<h4>Generate Secure Share Link</h4>
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5">
 
-<form method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button class="btn btn-primary">Generate Link</button>
-</form>
+        <div class="glass-card p-4">
+
+            <h4 class="mb-4 text-center">🔗 Generate Secure Share Link</h4>
+
+            <p class="text-muted small">
+                File: <strong>{{ file.original_name }}</strong>
+            </p>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    {{ form.expiry_minutes.label_tag }}
+                    {{ form.expiry_minutes }}
+                </div>
+
+                <div class="mb-4">
+                    {{ form.max_downloads.label_tag }}
+                    {{ form.max_downloads }}
+                </div>
+
+                <button class="btn btn-primary w-100">
+                    Generate Secure Link
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+</div>
 
 {% endblock %}
